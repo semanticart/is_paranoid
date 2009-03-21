@@ -1,0 +1,68 @@
+h1. is_paranoid ( same as it ever was )
+
+h3. and you may ask yourself, well, how did I get here?
+
+Sometimes you want to delete something in ActiveRecord, but you realize you might need it later (for an undo feature, or just as a safety net, etc.).  There are a plethora of plugins that accomplish this, the most famous of which is the venerable acts_as_paranoid which is great but not really actively developed any more.  What's more, acts_as_paranoid was written for an older version of ActiveRecord and, with default_scope in 2.3, it is now possible to do the same thing with significantly less complexity.  Thus, *is_paranoid*.
+
+h3. and you may ask yourself, how do I work this?
+
+You should read the specs, or the RDOC, or even the source itself (which is very readable), but for the lazy, here's the hand-holding:
+
+You need ActiveRecord 2.3 and you need to properly install this gem.  Then you need a model with a deleted_at timestamp column on its database table.  If that column is null, the item isn't deleted.  If it has a timestamp, it should count as deleted.
+
+So let's assume we have a model Automobile that has a deleted_at column on the automobiles table.
+
+If you're working with Rails, in your environment.rb, add the following to your initializer block.
+
+<pre>
+Rails::Initializer.run do |config|
+  # ...
+  config.gem "jchupp-is_paranoid", :lib => 'is_paranoid', :version => ">= 0.0.1"
+end
+</pre>
+
+Then in your ActiveRecord model
+
+<pre>
+class Automobile < ActiveRecord::Base
+  is_paranoid
+end
+</pre>
+
+Now our automobiles are now soft-deleteable.
+
+<pre>
+  that_large_automobile = Automobile.create()
+  Automobile.count # => 1
+
+  that_large_automobile.destroy
+  Automobile.count # => 0
+  Automobile.count_with_deleted # => 1
+
+  # where is that large automobile?
+  that_large_automobile = Automobile.find_with_deleted(:all).first
+  that_large_automobile.restore
+  Automobile.count # => 1
+</pre>
+
+One thing to note, destroying is always undo-able, but deleting is not.
+
+<pre>
+  Automobile.destroy_all
+  Automobile.count # => 0
+  Automobile.count_with_deleted # => 1
+  
+  Automobile.delete_all
+  Automobile.count_with_deleted # => 0
+  # And you may tell yourself, "My god!  What have I done?"
+</pre>
+
+h3. and you may ask yourself, where does that highway go to?
+
+If you find any bugs, have any ideas of features you think are missing, or find things you're like to see work differently, feel free to send me a message or a pull request.
+
+h3. Thanks
+
+Thanks to Rick Olson for acts_as_paranoid which is obviously an inspiration in concept and execution, Ryan Bates for mentioning the idea of using default_scope for this on Ryan Daigle's "post introducing default_scope":defscope, and the Talking Heads for being the Talking Heads. 
+
+[defscope]http://ryandaigle.com/articles/2008/11/18/what-s-new-in-edge-rails-default-scoping
