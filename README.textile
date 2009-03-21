@@ -54,7 +54,7 @@ One thing to note, destroying is always undo-able, but deleting is not.
   
   Automobile.delete_all
   Automobile.count_with_deleted # => 0
-  # And you may tell yourself, "My god!  What have I done?"
+  # And you may say to yourself, "My god!  What have I done?"
 </pre>
 
 h3. and you may ask yourself, where does that highway go to?
