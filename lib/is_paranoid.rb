@@ -17,8 +17,8 @@ module IsParanoid
       class_eval do
         # This is the real magic.  All calls made to this model will append
         # the conditions deleted_at => nil.  Exceptions require using
-        # exclusive_scope (see self.delete_all, self.count_with_deleted,
-        # and self.find_with_deleted )
+        # exclusive_scope (see self.delete_all, self.count_with_destroyed,
+        # and self.find_with_destroyed )
         default_scope :conditions => {:deleted_at => nil}
 
         # Actually delete the model, bypassing the safety net.  Because
@@ -32,13 +32,13 @@ module IsParanoid
         end
 
         # Return a count that includes the soft-deleted models.
-        def self.count_with_deleted *args
+        def self.count_with_destroyed *args
           self.with_exclusive_scope { count(*args) }
         end
 
         # Return instances of all models matching the query regardless
         # of whether or not they have been soft-deleted.
-        def self.find_with_deleted *args
+        def self.find_with_destroyed *args
           self.with_exclusive_scope { find(*args) }
         end
 

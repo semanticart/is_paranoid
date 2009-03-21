@@ -19,16 +19,16 @@ describe Android do
   end
 
   it "should delete normally" do
-    Android.count_with_deleted.should == 2
+    Android.count_with_destroyed.should == 2
     Android.delete_all
-    Android.count_with_deleted.should == 0
+    Android.count_with_destroyed.should == 0
   end
 
   it "should handle Model.destroy_all properly" do
     lambda{
       Android.destroy_all("owner_id = #{@luke.id}")
     }.should change(Android, :count).from(2).to(0)
-    Android.count_with_deleted.should == 2
+    Android.count_with_destroyed.should == 2
   end
 
   it "should handle Model.destroy(id) properly" do
@@ -36,7 +36,7 @@ describe Android do
       Android.destroy(@r2d2.id)
     }.should change(Android, :count).from(2).to(1)
 
-    Android.count_with_deleted.should == 2
+    Android.count_with_destroyed.should == 2
   end
 
   it "should be not show up in the relationship to the owner once deleted" do
@@ -47,24 +47,24 @@ describe Android do
     Android.first(:conditions => {:name => 'R2D2'}).should be_blank
   end
 
-  it "should be able to find deleted items via find_with_deleted" do
+  it "should be able to find deleted items via find_with_destroyed" do
     @r2d2.destroy
     Android.find(:first, :conditions => {:name => 'R2D2'}).should be_blank
-    Android.find_with_deleted(:first, :conditions => {:name => 'R2D2'}).should_not be_blank
+    Android.find_with_destroyed(:first, :conditions => {:name => 'R2D2'}).should_not be_blank
   end
 
   it "should have a proper count inclusively and exclusively of deleted items" do
     @r2d2.destroy
     @c3p0.destroy
     Android.count.should == 0
-    Android.count_with_deleted.should == 2
+    Android.count_with_destroyed.should == 2
   end
 
   it "should mark deleted on dependent destroys" do
     lambda{
       @luke.destroy
     }.should change(Android, :count).from(2).to(0)
-    Android.count_with_deleted.should == 2
+    Android.count_with_destroyed.should == 2
   end
 
   it "should allow restoring" do

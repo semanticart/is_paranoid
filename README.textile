@@ -37,10 +37,10 @@ Now our automobiles are now soft-deleteable.
 
   that_large_automobile.destroy
   Automobile.count # => 0
-  Automobile.count_with_deleted # => 1
+  Automobile.count_with_destroyed # => 1
 
   # where is that large automobile?
-  that_large_automobile = Automobile.find_with_deleted(:all).first
+  that_large_automobile = Automobile.find_with_destroyed(:all).first
   that_large_automobile.restore
   Automobile.count # => 1
 </pre>
@@ -50,10 +50,10 @@ One thing to note, destroying is always undo-able, but deleting is not.
 <pre>
   Automobile.destroy_all
   Automobile.count # => 0
-  Automobile.count_with_deleted # => 1
+  Automobile.count_with_destroyed # => 1
   
   Automobile.delete_all
-  Automobile.count_with_deleted # => 0
+  Automobile.count_with_destroyed # => 0
   # And you may say to yourself, "My god!  What have I done?"
 </pre>
 
