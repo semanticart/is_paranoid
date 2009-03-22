@@ -22,7 +22,7 @@ module IsParanoid
         default_scope :conditions => {:deleted_at => nil}
 
         # Actually delete the model, bypassing the safety net.  Because
-        # this method is called internally by Model.delete and on the
+        # this method is called internally by Model.delete(id) and on the
         # delete method in each instance, we don't need to specify those
         # methods separately
         def self.delete_all conditions = nil
@@ -50,7 +50,7 @@ module IsParanoid
         # Override the default destroy to allow us to flag deleted_at.
         # This preserves the before_destroy and after_destroy callbacks.
         # Because this is also called internally by Model.destroy_all and
-        # the destroy Model.destroy, we don't need to specify those methods
+        # the Model.destroy(id), we don't need to specify those methods
         # separately.
         def destroy
           return false if callback(:before_destroy) == false
