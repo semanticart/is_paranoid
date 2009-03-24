@@ -57,9 +57,17 @@ One thing to note, destroying is always undo-able, but deleting is not.
   # And you may say to yourself, "My god!  What have I done?"
 </pre>
 
+h3. Note:
+
+  validates_uniqueness_of does not ignore items marked with a deleted_at flag.  This is a behavior difference between is_paranoid and acts_as_paranoid.  I'm going to treat this as a bug until I get a chance to make it an optional feature.  Be aware of it.
+
 h3. and you may ask yourself, where does that highway go to?
 
 If you find any bugs, have any ideas of features you think are missing, or find things you're like to see work differently, feel free to send me a message or a pull request.
+
+Currently on the todo list:
+* deal with validates_uniqueness_of issue
+* add options for merging additional default_scope options (i.e. order, etc.)
 
 h3. Thanks
 

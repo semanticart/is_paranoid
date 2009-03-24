@@ -5,6 +5,7 @@ class Person < ActiveRecord::Base
 end
 
 class Android < ActiveRecord::Base
+  validates_uniqueness_of :name
   is_paranoid
 end
 
@@ -72,5 +73,14 @@ describe Android do
     lambda{
       @r2d2.restore
     }.should change(Android, :count).from(1).to(2)
+  end
+
+  # Note:  this isn't necessarily ideal, this just serves to demostrate
+  # how it currently works
+  it "should not ignore deleted items in validation checks" do
+    @r2d2.destroy
+    lambda{
+      Android.create!(:name => 'R2D2')
+    }.should raise_error(ActiveRecord::RecordInvalid)
   end
 end
