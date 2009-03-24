@@ -13,7 +13,11 @@ module IsParanoid
     #  class Android < ActiveRecord::Base
     #    is_paranoid
     #  end
-    def is_paranoid
+    #
+    # If you want to include ActiveRecord::Calculations to include your
+    # destroyed models, do is_paranoid :with_calculations => true and you
+    # will get sum_with_deleted, count_with_deleted, etc.
+    def is_paranoid opts = {}
       class_eval do
         # This is the real magic.  All calls made to this model will append
         # the conditions deleted_at => nil.  Exceptions require using
@@ -29,11 +33,6 @@ module IsParanoid
           self.with_exclusive_scope do
             super conditions
           end
-        end
-
-        # Return a count that includes the soft-deleted models.
-        def self.count_with_destroyed *args
-          self.with_exclusive_scope { count(*args) }
         end
 
         # Return instances of all models matching the query regardless
@@ -64,6 +63,17 @@ module IsParanoid
         def restore
           self.update_attribute(:deleted_at, nil)
         end
+      end
+
+      if opts[:with_calculations]
+        self.extend(Module.new{
+          [:average, :calculate, :construct_count_options_from_args,
+          :count, :maximum, :minimum, :sum].each do |method|          # EXAMPLE OUTPUT:
+            define_method "#{method}_with_destroyed" do |*args|       #  def count_with_destroyed(*args)
+              self.with_exclusive_scope{ self.send(method, *args) }   #     self.with_exclusive_scope{ self.send(:count, *args) }
+            end                                                       #  end
+          end
+        })
       end
     end
   end

@@ -25,11 +25,11 @@ Then in your ActiveRecord model
 
 <pre>
 class Automobile < ActiveRecord::Base
-  is_paranoid
+  is_paranoid :with_calculations => true
 end
 </pre>
 
-Now our automobiles are now soft-deleteable.
+Now our automobiles are now soft-deleteable.  In fact, that's more complicated than necessary since you don't have to use :with_calculations => true unless you want to get special calculation methods extended off of ActiveRecord::Calculations like count_with_destroyed and sum_with_destroyed.
 
 <pre>
   that_large_automobile = Automobile.create()

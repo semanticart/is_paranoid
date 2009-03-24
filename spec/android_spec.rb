@@ -6,6 +6,10 @@ end
 
 class Android < ActiveRecord::Base
   validates_uniqueness_of :name
+  is_paranoid :with_calculations => true
+end
+
+class NoCalculation < ActiveRecord::Base
   is_paranoid
 end
 
@@ -73,6 +77,15 @@ describe Android do
     lambda{
       @r2d2.restore
     }.should change(Android, :count).from(1).to(2)
+  end
+
+  it "should respond to various calculations if we specify that we want them" do
+    NoCalculation.respond_to?(:sum_with_destroyed).should == false
+    Android.respond_to?(:sum_with_destroyed).should == true
+
+    @r2d2.destroy
+    Android.sum('id').should == @c3p0.id
+    Android.sum_with_destroyed('id').should == @r2d2.id + @c3p0.id
   end
 
   # Note:  this isn't necessarily ideal, this just serves to demostrate
