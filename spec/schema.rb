@@ -12,4 +12,14 @@ ActiveRecord::Schema.define(:version => 20090317164830) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  create_table "ninjas", :force => true do |t|
+    t.string   "name"
+    t.boolean  "visible", :default => true
+  end
+
+  create_table "pirates", :force => true do |t|
+    t.string   "name"
+    t.boolean  "alive", :default => false
+  end
 end

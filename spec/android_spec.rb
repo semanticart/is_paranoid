@@ -13,6 +13,19 @@ class NoCalculation < ActiveRecord::Base
   is_paranoid
 end
 
+class Ninja < ActiveRecord::Base
+  is_paranoid :field => :visible, :field_destroyed => false, :field_not_destroyed => true
+end
+
+class Pirate < ActiveRecord::Base
+  is_paranoid :field => :alive, :field_destroyed => false, :field_not_destroyed => true
+end
+
+class ZombiePirate < ActiveRecord::Base
+  set_table_name :pirates
+  is_paranoid :field => :alive, :field_destroyed => true, :field_not_destroyed => false
+end
+
 describe Android do
   before(:each) do
     Android.delete_all
@@ -95,5 +108,22 @@ describe Android do
     lambda{
       Android.create!(:name => 'R2D2')
     }.should raise_error(ActiveRecord::RecordInvalid)
+  end
+  
+  it "should allow specifying alternate fields and field values" do
+    ninja = Ninja.create(:name => 'Esteban')
+    ninja.destroy
+    Ninja.first.should be_blank
+    Ninja.find_with_destroyed(:first).should == ninja
+    
+    pirate = Pirate.create(:name => 'Reginald')
+    pirate.destroy
+    Pirate.first.should be_blank
+    Pirate.find_with_destroyed(:first).should == pirate
+
+    ZombiePirate.first.id.should == pirate.id
+    lambda{
+      ZombiePirate.first.destroy
+    }.should change(Pirate, :count)
   end
 end

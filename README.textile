@@ -59,7 +59,7 @@ One thing to note, destroying is always undo-able, but deleting is not.
 
 h3. Note:
 
-  validates_uniqueness_of does not ignore items marked with a deleted_at flag.  This is a behavior difference between is_paranoid and acts_as_paranoid.  I'm going to treat this as a bug until I get a chance to make it an optional feature.  Be aware of it.
+validates_uniqueness_of does not ignore items marked with a deleted_at flag.  This is a behavior difference between is_paranoid and acts_as_paranoid.  I'm going to treat this as a bug until I get a chance to make it an optional feature.  Be aware of it.
 
 h3. and you may ask yourself, where does that highway go to?
 
