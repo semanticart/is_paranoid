@@ -6,7 +6,7 @@ end
 
 class Android < ActiveRecord::Base
   validates_uniqueness_of :name
-  is_paranoid :with_calculations => true
+  is_paranoid
 end
 
 class NoCalculation < ActiveRecord::Base
@@ -14,16 +14,16 @@ class NoCalculation < ActiveRecord::Base
 end
 
 class Ninja < ActiveRecord::Base
-  is_paranoid :field => :visible, :field_destroyed => false, :field_not_destroyed => true
+  is_paranoid :field => [:visible, false, true]
 end
 
 class Pirate < ActiveRecord::Base
-  is_paranoid :field => :alive, :field_destroyed => false, :field_not_destroyed => true
+  is_paranoid :field => [:alive, false, true]
 end
 
-class ZombiePirate < ActiveRecord::Base
+class DeadPirate < ActiveRecord::Base
   set_table_name :pirates
-  is_paranoid :field => :alive, :field_destroyed => true, :field_not_destroyed => false
+  is_paranoid :field => [:alive, true, false]
 end
 
 describe Android do
@@ -68,7 +68,13 @@ describe Android do
   it "should be able to find deleted items via find_with_destroyed" do
     @r2d2.destroy
     Android.find(:first, :conditions => {:name => 'R2D2'}).should be_blank
-    Android.find_with_destroyed(:first, :conditions => {:name => 'R2D2'}).should_not be_blank
+    Android.first_with_destroyed(:conditions => {:name => 'R2D2'}).should_not be_blank
+  end
+
+  it "should be able to find only deleted items via find_destroyed_only" do
+    @r2d2.destroy
+    Android.all_destroyed_only.size.should == 1
+    Android.first_destroyed_only.should == @r2d2
   end
 
   it "should have a proper count inclusively and exclusively of deleted items" do
@@ -92,13 +98,12 @@ describe Android do
     }.should change(Android, :count).from(1).to(2)
   end
 
-  it "should respond to various calculations if we specify that we want them" do
-    NoCalculation.respond_to?(:sum_with_destroyed).should == false
-    Android.respond_to?(:sum_with_destroyed).should == true
-
+  it "should respond to various calculations" do
     @r2d2.destroy
     Android.sum('id').should == @c3p0.id
     Android.sum_with_destroyed('id').should == @r2d2.id + @c3p0.id
+
+    Android.average_with_destroyed('id').should == (@r2d2.id + @c3p0.id) / 2.0
   end
 
   # Note:  this isn't necessarily ideal, this just serves to demostrate
@@ -121,9 +126,9 @@ describe Android do
     Pirate.first.should be_blank
     Pirate.find_with_destroyed(:first).should == pirate
 
-    ZombiePirate.first.id.should == pirate.id
+    DeadPirate.first.id.should == pirate.id
     lambda{
-      ZombiePirate.first.destroy
-    }.should change(Pirate, :count)
+      DeadPirate.first.destroy
+    }.should change(Pirate, :count).from(0).to(1)
   end
 end

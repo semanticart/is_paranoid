@@ -8,11 +8,11 @@ h3. and you may ask yourself, how do I work this?
 
 You should read the specs, or the RDOC, or even the source itself (which is very readable), but for the lazy, here's the hand-holding:
 
-You need ActiveRecord 2.3 and you need to properly install this gem.  Then you need a model with a deleted_at timestamp column on its database table.  If that column is null, the item isn't deleted.  If it has a timestamp, it should count as deleted.
+You need ActiveRecord 2.3 and you need to properly install this gem.  Then you need a model with a field to serve as a flag column on its database table.  For this example we'll use a timestamp named "deleted_at".  If that column is null, the item isn't deleted.  If it has a timestamp, it should count as deleted.
 
 So let's assume we have a model Automobile that has a deleted_at column on the automobiles table.
 
-If you're working with Rails, in your environment.rb, add the following to your initializer block.
+If you're working with Rails, in your environment.rb, add the following to your initializer block (you may want to change the version number).
 
 <pre>
 Rails::Initializer.run do |config|
@@ -25,11 +25,11 @@ Then in your ActiveRecord model
 
 <pre>
 class Automobile < ActiveRecord::Base
-  is_paranoid :with_calculations => true
+  is_paranoid
 end
 </pre>
 
-Now our automobiles are now soft-deleteable.  In fact, that's more complicated than necessary since you don't have to use :with_calculations => true unless you want to get special calculation methods extended off of ActiveRecord::Calculations like count_with_destroyed and sum_with_destroyed.
+Now our automobiles are now soft-deleteable.
 
 <pre>
   that_large_automobile = Automobile.create()
@@ -56,6 +56,25 @@ One thing to note, destroying is always undo-able, but deleting is not.
   Automobile.count_with_destroyed # => 0
   # And you may say to yourself, "My god!  What have I done?"
 </pre>
+
+All calculations and finds are created via a define_method call in method_missing.  So you don't get a bunch of unnecessary methods defined unless you use them.  Any find/count/sum/etc. _with_destroyed calls should work and you can also do find/count/sum/etc._destroyed_only.
+
+h3. Specifying alternate rules for what should be considered destroyed
+
+"deleted_at" as a timestamp is what acts_as_paranoid uses to define what is and isn't destroyed (see above), but you can specify alternate options with is_paranoid.  In the is_paranoid line of your model you can specify the field, the value the field should have if the entry should count as destroyed, and the value the field should have if the entry is not destroyed.  Consider the following models:
+
+<pre>
+  class Pirate < ActiveRecord::Base
+    is_paranoid :field => [:alive, false, true]
+  end
+
+  class DeadPirate < ActiveRecord::Base
+    set_table_name :pirates
+    is_paranoid :field => [:alive, true, false]
+  end
+</pre>
+
+These two models share the same table, but when we are finding Pirates, we're only interested in those that are alive.  To break it down, we specify :alive as our field to check, false as what the model field should be marked at when destroyed and true to what the field should be if they're not destroyed.  DeadPirates are specified as the opposite.  Check out the specs if you're still confused.
 
 h3. Note:
 
