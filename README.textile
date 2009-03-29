@@ -94,7 +94,6 @@ h3. and you may ask yourself, where does that highway go to?
 If you find any bugs, have any ideas of features you think are missing, or find things you're like to see work differently, feel free to send me a message or a pull request.
 
 Currently on the todo list:
-* deal with validates_uniqueness_of issue
 * add options for merging additional default_scope options (i.e. order, etc.)
 
 h3. Thanks
