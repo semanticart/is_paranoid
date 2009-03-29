@@ -45,7 +45,7 @@ Now our automobiles are now soft-deleteable.
   Automobile.count # => 1
 </pre>
 
-One thing to note, destroying is always undo-able, but deleting is not.
+One thing to note, destroying is always undo-able, but deleting is not.  This is a behavior difference between acts_as_paranoid and is_paranoid.
 
 <pre>
   Automobile.destroy_all
@@ -76,9 +76,18 @@ h3. Specifying alternate rules for what should be considered destroyed
 
 These two models share the same table, but when we are finding Pirates, we're only interested in those that are alive.  To break it down, we specify :alive as our field to check, false as what the model field should be marked at when destroyed and true to what the field should be if they're not destroyed.  DeadPirates are specified as the opposite.  Check out the specs if you're still confused.
 
-h3. Note:
+h3. Note about validates_uniqueness_of:
 
-validates_uniqueness_of does not ignore items marked with a deleted_at flag.  This is a behavior difference between is_paranoid and acts_as_paranoid.  I'm going to treat this as a bug until I get a chance to make it an optional feature.  Be aware of it.
+validates_uniqueness_of does not, by default, ignore items marked with a deleted_at (or other field name) flag.  This is a behavior difference between is_paranoid and acts_as_paranoid.  You can overcome this by specifying the field name you are using to mark destroyed items as your scope.  Example:
+
+<pre>
+  class Android < ActiveRecord::Base
+    validates_uniqueness_of :name, :scope => :deleted_at
+    is_paranoid
+  end
+</pre>
+
+And now the validates_uniqueness_of will ignore items that are destroyed.
 
 h3. and you may ask yourself, where does that highway go to?
 

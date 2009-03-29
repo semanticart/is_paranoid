@@ -1,6 +1,7 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 class Person < ActiveRecord::Base
+  validates_uniqueness_of :name
   has_many :androids, :foreign_key => :owner_id, :dependent => :destroy
 end
 
@@ -9,11 +10,18 @@ class Android < ActiveRecord::Base
   is_paranoid
 end
 
+class AndroidWithScopedUniqueness < ActiveRecord::Base
+  set_table_name :androids
+  validates_uniqueness_of :name, :scope => :deleted_at
+  is_paranoid
+end
+
 class NoCalculation < ActiveRecord::Base
   is_paranoid
 end
 
 class Ninja < ActiveRecord::Base
+  validates_uniqueness_of :name, :scope => :visible
   is_paranoid :field => [:visible, false, true]
 end
 
@@ -106,13 +114,20 @@ describe Android do
     Android.average_with_destroyed('id').should == (@r2d2.id + @c3p0.id) / 2.0
   end
 
-  # Note:  this isn't necessarily ideal, this just serves to demostrate
-  # how it currently works
-  it "should not ignore deleted items in validation checks" do
+  it "should not ignore deleted items in validation checks unless scoped" do
+    # Androids are not validates_uniqueness_of scoped
     @r2d2.destroy
     lambda{
       Android.create!(:name => 'R2D2')
     }.should raise_error(ActiveRecord::RecordInvalid)
+
+    lambda{
+      # creating shouldn't raise an error
+      another_r2d2 = AndroidWithScopedUniqueness.create!(:name => 'R2D2')
+      # neither should destroying the second incarnation since the
+      # validates_uniqueness_of is only applied on create
+      another_r2d2.destroy
+    }.should_not raise_error
   end
   
   it "should allow specifying alternate fields and field values" do
