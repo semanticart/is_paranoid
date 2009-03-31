@@ -86,7 +86,7 @@ module IsParanoid
                 #  end
                 define_method name do |*args|
                   self.with_exclusive_scope do
-                    with_scope({:find => { :conditions => ["#{destroyed_field} IS NOT ?", field_not_destroyed] }}) do
+                    with_scope({:find => { :conditions => ["#{self.table_name}.#{destroyed_field} IS NOT ?", field_not_destroyed] }}) do
                       self.send($1, *args)
                     end
                   end
