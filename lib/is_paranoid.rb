@@ -1,32 +1,23 @@
 require 'activerecord'
 
 module IsParanoid
-  def self.included(base) # :nodoc:
-    base.extend SafetyNet
+  # Call this in your model to enable all the safety-net goodness
+  #
+  #  Example:
+  #
+  #  class Android < ActiveRecord::Base
+  #    is_paranoid
+  #  end
+  #
+  def is_paranoid opts = {}
+    opts[:field] ||= [:deleted_at, Proc.new{Time.now.utc}, nil]
+    class_inheritable_accessor :destroyed_field, :field_destroyed, :field_not_destroyed
+    self.destroyed_field, self.field_destroyed, self.field_not_destroyed = opts[:field]
+
+    include ClassAndInstanceMethods
   end
 
-  module SafetyNet
-    # Call this in your model to enable all the safety-net goodness
-    #
-    #  Example:
-    #
-    #  class Android < ActiveRecord::Base
-    #    is_paranoid
-    #  end
-    #
-    # If you want to include ActiveRecord::Calculations to include your
-    # destroyed models, do is_paranoid :with_calculations => true and you
-    # will get sum_with_deleted, count_with_deleted, etc.
-    def is_paranoid opts = {}
-      opts[:field] ||= [:deleted_at, Proc.new{Time.now.utc}, nil]
-      class_inheritable_accessor :destroyed_field, :field_destroyed, :field_not_destroyed
-      self.destroyed_field, self.field_destroyed, self.field_not_destroyed = opts[:field]
-
-      include Work
-    end
-  end
-
-  module Work
+  module ClassAndInstanceMethods
     def self.included(base)
       base.class_eval do
         # This is the real magic.  All calls made to this model will append
@@ -103,4 +94,4 @@ module IsParanoid
   end
 end
 
-ActiveRecord::Base.send(:include, IsParanoid)
+ActiveRecord::Base.send(:extend, IsParanoid)
