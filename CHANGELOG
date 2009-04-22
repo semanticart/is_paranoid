@@ -1,5 +1,8 @@
 This will only document major changes.  Please see the commit log for minor changes.
 
+-2009-04-22
+* destroying and restoring records no longer triggers saving/updating callbacks
+
 -2009-03-28
 * removing syntax for calculation require (all find and ActiveRecord calculations are done on-the-fly now via method_missing)
 * adding ability to specify alternate fields and values for destroyed objects

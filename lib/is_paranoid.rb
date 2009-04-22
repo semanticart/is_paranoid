@@ -21,7 +21,8 @@ module IsParanoid
     def self.included(base)
       base.class_eval do
         # This is the real magic.  All calls made to this model will append
-        # the conditions deleted_at => nil.  Exceptions require using
+        # the conditions deleted_at => nil (or whatever your destroyed_field
+        # and field_not_destroyed are).  All exceptions require using
         # exclusive_scope (see self.delete_all, self.count_with_destroyed,
         # and self.find_with_destroyed )
         default_scope :conditions => {destroyed_field => field_not_destroyed}
@@ -36,7 +37,10 @@ module IsParanoid
 
         # Mark the model deleted_at as now.
         def destroy_without_callbacks
-          self.update_attribute(destroyed_field, ( field_destroyed.respond_to?(:call) ? field_destroyed.call : field_destroyed))
+          self.class.update_all(
+            "#{destroyed_field} = #{self.class.connection.quote(( field_destroyed.respond_to?(:call) ? field_destroyed.call : field_destroyed))}",
+            "id = #{self.id}"
+          )
         end
 
         # Override the default destroy to allow us to flag deleted_at.
@@ -51,10 +55,21 @@ module IsParanoid
           result
         end
 
-        # Set deleted_at flag on a model to nil, effectively undoing the
-        # soft-deletion.
+        # Use update_all with an exclusive scope to restore undo the soft-delete.
+        # This bypasses update-related callbacks
+        def self.restore(id)
+          with_exclusive_scope do
+            update_all(
+              "#{destroyed_field} = #{connection.quote(field_not_destroyed)}",
+              "id = #{id}"
+            )
+          end
+        end
+
+        # Set deleted_at flag on a model to field_not_destroyed, effectively
+        # undoing the soft-deletion.
         def restore
-          self.update_attribute(destroyed_field, field_not_destroyed)
+          self.class.restore(id)
         end
 
         # find_with_destroyed and other blah_with_destroyed and

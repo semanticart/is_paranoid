@@ -7,7 +7,13 @@ end
 
 class Android < ActiveRecord::Base
   validates_uniqueness_of :name
+
   is_paranoid
+
+  before_update :raise_hell
+  def raise_hell
+    raise "hell"
+  end
 end
 
 class AndroidWithScopedUniqueness < ActiveRecord::Base
@@ -57,7 +63,7 @@ describe Android do
     Android.count_with_destroyed.should == 2
   end
 
-  it "should handle Model.destroy(id) properly" do
+  it "should handle Model.destroy(id) properly without hitting update/save related callbacks" do
     lambda{
       Android.destroy(@r2d2.id)
     }.should change(Android, :count).from(2).to(1)
@@ -99,7 +105,7 @@ describe Android do
     Android.count_with_destroyed.should == 2
   end
 
-  it "should allow restoring" do
+  it "should allow restoring without hitting update/save related callbacks" do
     @r2d2.destroy
     lambda{
       @r2d2.restore
