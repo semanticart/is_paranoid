@@ -22,24 +22,6 @@ class AndroidWithScopedUniqueness < ActiveRecord::Base
   is_paranoid
 end
 
-class NoCalculation < ActiveRecord::Base
-  is_paranoid
-end
-
-class Ninja < ActiveRecord::Base
-  validates_uniqueness_of :name, :scope => :visible
-  is_paranoid :field => [:visible, false, true]
-end
-
-class Pirate < ActiveRecord::Base
-  is_paranoid :field => [:alive, false, true]
-end
-
-class DeadPirate < ActiveRecord::Base
-  set_table_name :pirates
-  is_paranoid :field => [:alive, true, false]
-end
-
 describe Android do
   before(:each) do
     Android.delete_all
@@ -135,13 +117,46 @@ describe Android do
       another_r2d2.destroy
     }.should_not raise_error
   end
-  
+end
+
+class Ninja < ActiveRecord::Base
+  validates_uniqueness_of :name, :scope => :visible
+  is_paranoid :field => [:visible, false, true]
+end
+
+class Pirate < ActiveRecord::Base
+  is_paranoid :field => [:alive, false, true]
+end
+
+class DeadPirate < ActiveRecord::Base
+  set_table_name :pirates
+  is_paranoid :field => [:alive, true, false]
+end
+
+class RandomPirate < ActiveRecord::Base
+  set_table_name :pirates
+
+  def after_destroy
+    raise 'after_destroy works'
+  end
+end
+
+class UndestroyablePirate < ActiveRecord::Base
+  set_table_name :pirates
+  is_paranoid :field => [:alive, false, true]
+
+  def before_destroy
+    false
+  end
+end
+
+describe 'Ninjas and Pirates' do
   it "should allow specifying alternate fields and field values" do
     ninja = Ninja.create(:name => 'Esteban')
     ninja.destroy
     Ninja.first.should be_blank
     Ninja.find_with_destroyed(:first).should == ninja
-    
+
     pirate = Pirate.create(:name => 'Reginald')
     pirate.destroy
     Pirate.first.should be_blank
@@ -151,5 +166,21 @@ describe Android do
     lambda{
       DeadPirate.first.destroy
     }.should change(Pirate, :count).from(0).to(1)
+  end
+
+  it "should handle before_destroy and after_destroy callbacks properly" do
+    edward = UndestroyablePirate.create(:name => 'Edward')
+    lambda{
+      edward.destroy
+    }.should_not change(UndestroyablePirate, :count)
+
+    raul = RandomPirate.create(:name => 'Raul')
+    lambda{
+      begin
+        edward.destroy
+      rescue => ex
+        ex.message.should == 'after_destroy works'
+      end
+    }.should_not change(RandomPirate, :count)
   end
 end
