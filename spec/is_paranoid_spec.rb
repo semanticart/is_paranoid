@@ -7,6 +7,7 @@ end
 
 class Android < ActiveRecord::Base
   validates_uniqueness_of :name
+  has_many :components, :dependent => :destroy
 
   is_paranoid
 
@@ -14,6 +15,10 @@ class Android < ActiveRecord::Base
   def raise_hell
     raise "hell"
   end
+end
+
+class Component < ActiveRecord::Base
+  is_paranoid
 end
 
 class AndroidWithScopedUniqueness < ActiveRecord::Base
@@ -26,10 +31,12 @@ describe Android do
   before(:each) do
     Android.delete_all
     Person.delete_all
+    Component.delete_all
 
     @luke = Person.create(:name => 'Luke Skywalker')
     @r2d2 = Android.create(:name => 'R2D2', :owner_id => @luke.id)
     @c3p0 = Android.create(:name => 'C3P0', :owner_id => @luke.id)
+    @r2d2.components.create(:name => 'Rotors')
   end
 
   it "should delete normally" do
@@ -92,6 +99,13 @@ describe Android do
     lambda{
       @r2d2.restore
     }.should change(Android, :count).from(1).to(2)
+  end
+
+  it "should restore dependent models when being restored" do
+    @r2d2.destroy
+    lambda{
+      @r2d2.restore
+    }.should change(Component, :count).from(0).to(1)
   end
 
   it "should respond to various calculations" do
