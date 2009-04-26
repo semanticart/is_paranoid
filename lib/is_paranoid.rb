@@ -57,19 +57,31 @@ module IsParanoid
 
         # Use update_all with an exclusive scope to restore undo the soft-delete.
         # This bypasses update-related callbacks
-        def self.restore(id)
+        def self.restore(id, options = {})
+          options.reverse_merge!({:include_destroyed_dependents => true})
           with_exclusive_scope do
             update_all(
               "#{destroyed_field} = #{connection.quote(field_not_destroyed)}",
               "id = #{id}"
             )
           end
+          if options[:include_destroyed_dependents]
+            self.reflect_on_all_associations.each do |association|
+              if association.options[:dependent] == :destroy
+                association.klass.find_with_destroyed(:all,
+                  :conditions => ["#{association.primary_key_name} = ? AND deleted_at IS NOT NULL", id]
+                ).each do |model|
+                  model.restore
+                end
+              end
+            end
+          end
         end
 
         # Set deleted_at flag on a model to field_not_destroyed, effectively
         # undoing the soft-deletion.
-        def restore
-          self.class.restore(id)
+        def restore(options = {})
+          self.class.restore(id, options)
         end
 
         # find_with_destroyed and other blah_with_destroyed and
