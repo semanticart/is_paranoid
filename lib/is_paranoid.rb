@@ -67,9 +67,9 @@ module IsParanoid
           end
           if options[:include_destroyed_dependents]
             self.reflect_on_all_associations.each do |association|
-              if association.options[:dependent] == :destroy
-                association.klass.find_with_destroyed(:all,
-                  :conditions => ["#{association.primary_key_name} = ? AND deleted_at IS NOT NULL", id]
+              if association.options[:dependent] == :destroy and association.klass.respond_to?(:restore)
+                association.klass.find_destroyed_only(:all,
+                  :conditions => ["#{association.primary_key_name} = ?", id]
                 ).each do |model|
                   model.restore
                 end

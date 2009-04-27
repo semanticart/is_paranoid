@@ -108,6 +108,13 @@ describe Android do
     }.should change(Component, :count).from(0).to(1)
   end
 
+  it "should allow the option to not restore dependent models when being restored" do
+    @r2d2.destroy
+    lambda{
+      @r2d2.restore(:include_destroyed_dependents => false)
+    }.should_not change(Component, :count)
+  end
+
   it "should respond to various calculations" do
     @r2d2.destroy
     Android.sum('id').should == @c3p0.id
