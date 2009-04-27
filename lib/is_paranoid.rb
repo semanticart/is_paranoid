@@ -56,7 +56,13 @@ module IsParanoid
         end
 
         # Use update_all with an exclusive scope to restore undo the soft-delete.
-        # This bypasses update-related callbacks
+        # This bypasses update-related callbacks.
+        #
+        # By default, restores cascade through associations that are
+        # :dependent => :destroy and under is_paranoid.  You can prevent restoration
+        # of associated models by passing :include_destroyed_dependents => false,
+        # for example:
+        #    Android.restore(:include_destroyed_dependents => false)
         def self.restore(id, options = {})
           options.reverse_merge!({:include_destroyed_dependents => true})
           with_exclusive_scope do

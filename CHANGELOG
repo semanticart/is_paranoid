@@ -1,5 +1,8 @@
 This will only document major changes.  Please see the commit log for minor changes.
 
+-2009-04-27
+* restoring models now cascades to child dependent => destroy models via Matt Todd
+
 -2009-04-22
 * destroying and restoring records no longer triggers saving/updating callbacks
 

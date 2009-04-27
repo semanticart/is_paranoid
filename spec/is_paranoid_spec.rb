@@ -1,11 +1,11 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-class Person < ActiveRecord::Base
+class Person < ActiveRecord::Base #:nodoc:
   validates_uniqueness_of :name
   has_many :androids, :foreign_key => :owner_id, :dependent => :destroy
 end
 
-class Android < ActiveRecord::Base
+class Android < ActiveRecord::Base #:nodoc:
   validates_uniqueness_of :name
   has_many :components, :dependent => :destroy
 
@@ -17,11 +17,11 @@ class Android < ActiveRecord::Base
   end
 end
 
-class Component < ActiveRecord::Base
+class Component < ActiveRecord::Base #:nodoc:
   is_paranoid
 end
 
-class AndroidWithScopedUniqueness < ActiveRecord::Base
+class AndroidWithScopedUniqueness < ActiveRecord::Base #:nodoc:
   set_table_name :androids
   validates_uniqueness_of :name, :scope => :deleted_at
   is_paranoid
@@ -140,21 +140,21 @@ describe Android do
   end
 end
 
-class Ninja < ActiveRecord::Base
+class Ninja < ActiveRecord::Base #:nodoc:
   validates_uniqueness_of :name, :scope => :visible
   is_paranoid :field => [:visible, false, true]
 end
 
-class Pirate < ActiveRecord::Base
+class Pirate < ActiveRecord::Base #:nodoc:
   is_paranoid :field => [:alive, false, true]
 end
 
-class DeadPirate < ActiveRecord::Base
+class DeadPirate < ActiveRecord::Base #:nodoc:
   set_table_name :pirates
   is_paranoid :field => [:alive, true, false]
 end
 
-class RandomPirate < ActiveRecord::Base
+class RandomPirate < ActiveRecord::Base #:nodoc:
   set_table_name :pirates
 
   def after_destroy
@@ -162,7 +162,7 @@ class RandomPirate < ActiveRecord::Base
   end
 end
 
-class UndestroyablePirate < ActiveRecord::Base
+class UndestroyablePirate < ActiveRecord::Base #:nodoc:
   set_table_name :pirates
   is_paranoid :field => [:alive, false, true]
 
