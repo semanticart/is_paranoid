@@ -1,0 +1,4 @@
+is_paranoid.db
+pkg
+*.gem
+doc/

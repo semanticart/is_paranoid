@@ -7,8 +7,16 @@ Spec::Rake::SpecTask.new do |t|
   t.spec_files = FileList['spec/**/*_spec.rb']
 end
 
-task :install do
-  rm_rf "*.gem"
-  puts `gem build is_paranoid.gemspec`
-  puts `sudo gem install is_paranoid-0.0.1.gem`
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |s|
+    s.name = %q{is_paranoid}
+    s.summary = %q{ActiveRecord 2.3 compatible gem "allowing you to hide and restore records without actually deleting them."  Yes, like acts_as_paranoid, only with less code and less complexity.}
+    s.email = %q{jeff@semanticart.com}
+    s.homepage = %q{http://github.com/jchupp/is_paranoid/}
+    s.description = ""
+    s.authors = ["Jeffrey Chupp"]
+  end
+rescue LoadError
+  puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
 end
