@@ -23,7 +23,7 @@ ActiveRecord::Schema.define(:version => 20090317164830) do
 
   create_table "ninjas", :force => true do |t|
     t.string   "name"
-    t.boolean  "visible", :default => true
+    t.boolean  "visible", :default => false
   end
 
   create_table "pirates", :force => true do |t|
