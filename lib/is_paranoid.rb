@@ -14,17 +14,21 @@ module IsParanoid
 		opts[:field] ||= [:deleted_at, Proc.new{Time.now.utc}, nil]
 		class_inheritable_accessor :destroyed_field, :field_destroyed, :field_not_destroyed
 		self.destroyed_field, self.field_destroyed, self.field_not_destroyed = opts[:field]
+		
+		# This is the real magic. All calls made to this model will append
+		# the conditions deleted_at => nil (or whatever your destroyed_field
+		# and field_not_destroyed are). All exceptions require using
+		# exclusive_scope (see self.delete_all, self.count_with_destroyed,
+		# and self.find_with_destroyed defined in the module ClassMethods)
+		default_scope :conditions => {destroyed_field => field_not_destroyed}
 
-		def self.extended(base)
-			# This is the real magic. All calls made to this model will append
-			# the conditions deleted_at => nil (or whatever your destroyed_field
-			# and field_not_destroyed are). All exceptions require using
-			# exclusive_scope (see self.delete_all, self.count_with_destroyed,
-			# and self.find_with_destroyed )
-			default_scope :conditions => {destroyed_field => field_not_destroyed}
-
-			extend ClassMethods
-			include InstanceMethods
+		include ClassAndInstanceMethods
+	end
+	
+	module ClassAndInstanceMethods
+		def self.included(host_class)
+			host_class.extend ClassMethods
+			host_class.send(:include, InstanceMethods) #since include is a private method in ActiveRecord::Base
 		end
 	end
 
@@ -33,7 +37,7 @@ module IsParanoid
 		# this method is called internally by Model.delete(id) and on the
 		# delete method in each instance, we don't need to specify those
 		# methods separately
-		def self.delete_all conditions = nil
+		def delete_all conditions = nil
 			self.with_exclusive_scope { super conditions }
 		end
 
@@ -45,7 +49,7 @@ module IsParanoid
 		# of associated models by passing :include_destroyed_dependents => false,
 		# for example:
 		# Android.restore(:include_destroyed_dependents => false)
-		def self.restore(id, options = {})
+		def restore(id, options = {})
 			options.reverse_merge!({:include_destroyed_dependents => true})
 			with_exclusive_scope do
 				update_all(
@@ -69,7 +73,7 @@ module IsParanoid
 
 		# find_with_destroyed and other blah_with_destroyed and
 		# blah_destroyed_only methods are defined here
-		def self.method_missing name, *args
+		def method_missing name, *args
 			if name.to_s =~ /^(.*)(_destroyed_only|_with_destroyed)$/ and self.respond_to?($1)
 				self.extend(Module.new{
 					if $2 == '_with_destroyed' # Example:
@@ -78,14 +82,14 @@ module IsParanoid
 						end # end
 					else
 
-					# Example:
-					# def count_destroyed_only(*args)
-					# self.with_exclusive_scope do
-					# with_scope({:find => { :conditions => ["#{destroyed_field} IS NOT ?", nil] }}) do
-					# self.send(:count, *args)
-					# end
-					# end
-					# end
+						# Example:
+						# def count_destroyed_only(*args)
+						# self.with_exclusive_scope do
+						# with_scope({:find => { :conditions => ["#{destroyed_field} IS NOT ?", nil] }}) do
+						# self.send(:count, *args)
+						# end
+						# end
+						# end
 						define_method name do |*args|
 							self.with_exclusive_scope do
 								with_scope({:find => { :conditions => ["#{self.table_name}.#{destroyed_field} IS NOT ?", field_not_destroyed] }}) do
@@ -104,12 +108,13 @@ module IsParanoid
 	end
 
 	module InstanceMethods
+
 		# Mark the model deleted_at as now.
 		def destroy_without_callbacks
-		self.class.update_all(
-			"#{destroyed_field} = #{self.class.connection.quote(( field_destroyed.respond_to?(:call) ? field_destroyed.call : field_destroyed))}",
-			"id = #{self.id}"
-		)
+			self.class.update_all(
+				"#{destroyed_field} = #{self.class.connection.quote(( field_destroyed.respond_to?(:call) ? field_destroyed.call : field_destroyed))}",
+				"id = #{self.id}"
+			)
 		end
 
 		# Override the default destroy to allow us to flag deleted_at.
@@ -127,9 +132,11 @@ module IsParanoid
 		# Set deleted_at flag on a model to field_not_destroyed, effectively
 		# undoing the soft-deletion.
 		def restore(options = {})
-		self.class.restore(id, options)
+			self.class.restore(id, options)
 		end
+
 	end
+
 end
 
 ActiveRecord::Base.send(:extend, IsParanoid)
