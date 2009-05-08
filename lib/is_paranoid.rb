@@ -22,14 +22,8 @@ module IsParanoid
 		# and self.find_with_destroyed defined in the module ClassMethods)
 		default_scope :conditions => {destroyed_field => field_not_destroyed}
 
-		include ClassAndInstanceMethods
-	end
-	
-	module ClassAndInstanceMethods
-		def self.included(host_class)
-			host_class.extend ClassMethods
-			host_class.send(:include, InstanceMethods) #since include is a private method in ActiveRecord::Base
-		end
+		extend ClassMethods
+		include InstanceMethods
 	end
 
 	module ClassMethods
