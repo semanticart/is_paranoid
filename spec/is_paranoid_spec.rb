@@ -13,6 +13,18 @@ describe IsParanoid do
     @r2d2.components.create(:name => 'Rotors')
   end
 
+  describe 'non-is_paranoid models' do
+    it "should destroy as normal" do
+      lambda{
+        @luke.destroy
+      }.should change(Person, :count).by(-1)
+
+      lambda{
+        Person.count_with_destroyed
+      }.should raise_error(NoMethodError)
+    end
+  end
+
   describe 'destroying' do
     it "should soft-delete a record" do
        lambda{
@@ -51,7 +63,6 @@ describe IsParanoid do
         }.should change(Android, :count).from(2).to(0)
         Android.count_with_destroyed.should == 2
       end
-
     end
   end
 
