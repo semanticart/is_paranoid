@@ -10,7 +10,11 @@ describe IsParanoid do
     @luke = Person.create(:name => 'Luke Skywalker')
     @r2d2 = Android.create(:name => 'R2D2', :owner_id => @luke.id)
     @c3p0 = Android.create(:name => 'C3P0', :owner_id => @luke.id)
+
     @r2d2.components.create(:name => 'Rotors')
+
+    @r2d2.memories.create(:name => 'A pretty sunset')
+    @c3p0.sticker = Sticker.create(:name => 'OMG, PONIES!')
   end
 
   describe 'non-is_paranoid models' do
@@ -163,6 +167,23 @@ describe IsParanoid do
     end
   end
 
+  describe 'accessing destroyed parent models' do
+    it "should be able to access destroyed parents via parent_with_destroyed" do
+      # Memory is has_many with a non-default primary key
+      # Sticker is a has_one with a default primary key
+      [Memory, Sticker].each do |klass|
+        instance = klass.last
+        parent = instance.android
+        instance.android.destroy
+
+        # reload so the model doesn't remember the parent
+        instance.reload
+        instance.android.should == nil
+        instance.android_with_destroyed.should == parent
+      end
+    end
+  end
+
   describe 'alternate fields and field values' do
     it "should properly function for boolean values" do
       # ninjas are invisible by default.  not being ninjas, we can only
@@ -171,12 +192,14 @@ describe IsParanoid do
       ninja.vanish # aliased to destroy
       Ninja.first.should be_blank
       Ninja.find_with_destroyed(:first).should == ninja
+      Ninja.count.should == 0
 
       # we're only interested in pirates who are alive by default
       pirate = Pirate.create(:name => 'Reginald')
       pirate.destroy
       Pirate.first.should be_blank
       Pirate.find_with_destroyed(:first).should == pirate
+      Pirate.count.should == 0
 
       # we're only interested in pirates who are dead by default.
       # zombie pirates ftw!
@@ -184,6 +207,7 @@ describe IsParanoid do
       lambda{
         DeadPirate.first.destroy
       }.should change(Pirate, :count).from(0).to(1)
+      DeadPirate.count.should == 0
     end
   end
 

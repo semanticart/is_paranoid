@@ -107,6 +107,32 @@ module IsParanoid
 
   module InstanceMethods
 
+    def method_missing name, *args
+      # if we're trying for a _____with_destroyed method
+      # and we can respond to the _____ method
+      # and we have an association by the name of _____
+      if name.to_s =~ /^(.*)(_with_destroyed)$/ and
+          self.respond_to?($1) and
+          (assoc = self.class.reflect_on_all_associations.detect{|a| a.name.to_s == $1})
+
+        parent_klass = Object.module_eval("::#{assoc.class_name}", __FILE__, __LINE__)
+
+        self.class.send(
+          :include,
+          Module.new{                              # Example:
+            define_method name do |*args|          # def android_with_destroyed
+              parent_klass.find_with_destroyed(    #   Android.find_with_destroyed(
+                self.send(assoc.primary_key_name)  #     self.send(:android_id)
+              )                                    #   )
+            end                                    # end
+          }
+        )
+        self.send(name, *args)
+      else
+        super(name, *args)
+      end
+    end
+
     # Mark the model deleted_at as now.
     def destroy_without_callbacks
       self.class.update_all(

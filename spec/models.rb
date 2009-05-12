@@ -6,6 +6,8 @@ end
 class Android < ActiveRecord::Base #:nodoc:
   validates_uniqueness_of :name
   has_many :components, :dependent => :destroy
+  has_one :sticker
+  has_many :memories, :foreign_key => 'parent_id'
 
   is_paranoid
 
@@ -20,11 +22,21 @@ end
 class Component < ActiveRecord::Base #:nodoc:
   is_paranoid
   NEW_NAME = 'Something Else!'
-  
+
   after_destroy :change_name
   def change_name
     self.update_attribute(:name, NEW_NAME)
   end
+end
+
+class Memory < ActiveRecord::Base #:nodoc:
+  is_paranoid
+  belongs_to :android, :class_name => "Android", :foreign_key => "parent_id"
+end
+
+class Sticker < ActiveRecord::Base #:nodoc
+  is_paranoid
+  belongs_to :android
 end
 
 class AndroidWithScopedUniqueness < ActiveRecord::Base #:nodoc:
