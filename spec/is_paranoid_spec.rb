@@ -167,8 +167,8 @@ describe IsParanoid do
     end
   end
 
-  describe 'accessing destroyed parent models' do
-    it "should be able to access destroyed parents via parent_with_destroyed" do
+  describe '(parent)_with_destroyed' do
+    it "should be able to access destroyed parents" do
       # Memory is has_many with a non-default primary key
       # Sticker is a has_one with a default primary key
       [Memory, Sticker].each do |klass|
@@ -181,6 +181,13 @@ describe IsParanoid do
         instance.android.should == nil
         instance.android_with_destroyed.should == parent
       end
+    end
+
+    it "should return nil if no destroyed parent exists" do
+      sticker = Sticker.new(:name => 'Rainbows')
+      # because the default relationship works this way, i.e.
+      sticker.android.should == nil
+      sticker.android_with_destroyed.should == nil
     end
   end
 
