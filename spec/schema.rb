@@ -21,6 +21,12 @@ ActiveRecord::Schema.define(:version => 20090317164830) do
     t.datetime "updated_at"
   end
 
+  create_table "sub_components", :force => true do |t|
+    t.string "name"
+    t.integer "component_id"
+    t.datetime "deleted_at"
+  end
+
   create_table "memories", :force => true do |t|
     t.string   "name"
     t.integer  "parent_id"

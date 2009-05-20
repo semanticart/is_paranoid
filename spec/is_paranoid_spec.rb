@@ -147,6 +147,15 @@ describe IsParanoid do
         @r2d2.restore(:include_destroyed_dependents => false)
       }.should_not change(Component, :count)
     end
+
+    it "should restore parent and child models specified via :include" do
+      sub_component = SubComponent.create(:name => 'part', :component_id => @r2d2.components.first.id)
+      @r2d2.destroy
+      SubComponent.first(:conditions => {:id => sub_component.id}).should be_nil
+      @r2d2.components.first.restore(:include => [:android, :sub_components])
+      SubComponent.first(:conditions => {:id => sub_component.id}).should_not be_nil
+      Android.find(@r2d2.id).should_not be_nil
+    end
   end
 
   describe 'validations' do

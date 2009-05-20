@@ -21,12 +21,19 @@ end
 
 class Component < ActiveRecord::Base #:nodoc:
   is_paranoid
+  belongs_to :android, :dependent => :destroy
+  has_many :sub_components, :dependent => :destroy
   NEW_NAME = 'Something Else!'
 
   after_destroy :change_name
   def change_name
     self.update_attribute(:name, NEW_NAME)
   end
+end
+
+class SubComponent < ActiveRecord::Base #:nodoc:
+  is_paranoid
+  belongs_to :component, :dependent => :destroy
 end
 
 class Memory < ActiveRecord::Base #:nodoc:

@@ -38,13 +38,26 @@ module IsParanoid
     # Use update_all with an exclusive scope to restore undo the soft-delete.
     # This bypasses update-related callbacks.
     #
-    # By default, restores cascade through associations that are
+    # By default, restores cascade through associations that are belongs_to
     # :dependent => :destroy and under is_paranoid. You can prevent restoration
     # of associated models by passing :include_destroyed_dependents => false,
     # for example:
-    # Android.restore(:include_destroyed_dependents => false)
+    #
+    #   Android.restore(:include_destroyed_dependents => false)
+    #
+    # Alternatively you can specify which relationships to restore via :include,
+    # for example:
+    #
+    #  Android.restore(:include => [:parts, memories])
+    #
+    # Please note that specifying :include means you're not using
+    # :include_destroyed_dependents by default, though you can explicitly use
+    # both if you want all has_* relationships and specific belongs_to
+    # relationships, for example
+    #
+    #  Android.restore(:include => [:home, :planet], :include_destroyed_dependents => true)
     def restore(id, options = {})
-      options.reverse_merge!({:include_destroyed_dependents => true})
+      options.reverse_merge!({:include_destroyed_dependents => true}) unless options[:include]
       with_exclusive_scope do
         update_all(
         "#{destroyed_field} = #{connection.quote(field_not_destroyed)}",
@@ -52,13 +65,19 @@ module IsParanoid
         )
       end
 
-      if options[:include_destroyed_dependents]
-        self.reflect_on_all_associations.each do |association|
-          if association.options[:dependent] == :destroy and association.klass.respond_to?(:restore)
-            association.klass.find_destroyed_only(:all,
-            :conditions => ["#{association.primary_key_name} = ?", id]
-            ).each do |model|
-              model.restore
+      self.reflect_on_all_associations.each do |association|
+        if association.options[:dependent] == :destroy and association.klass.respond_to?(:restore)
+          dependent_relationship = association.macro.to_s =~ /^has/
+          if should_restore?(association.name, dependent_relationship, options)
+            if dependent_relationship
+              restore_related(association.klass, association.primary_key_name, id, options)
+            else
+              restore_related(
+                association.klass,
+                association.klass.primary_key,
+                self.first(id).send(association.primary_key_name),
+                options
+              )
             end
           end
         end
@@ -101,6 +120,21 @@ module IsParanoid
       self.send(name, *args)
       else
         super(name, *args)
+      end
+    end
+
+    protected
+
+    def should_restore?(association_name, dependent_relationship, options) #:nodoc:
+      ([*options[:include]] || []).include?(association_name) or
+        (options[:include_destroyed_dependents] and dependent_relationship)
+    end
+
+    def restore_related klass, key_name, id, options #:nodoc:
+      klass.find_destroyed_only(:all,
+        :conditions => ["#{key_name} = ?", id]
+      ).each do |model|
+        model.restore(options)
       end
     end
   end
