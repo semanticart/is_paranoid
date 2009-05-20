@@ -86,7 +86,7 @@ module IsParanoid
 
     # find_with_destroyed and other blah_with_destroyed and
     # blah_destroyed_only methods are defined here
-    def method_missing name, *args
+    def method_missing name, *args, &block
       if name.to_s =~ /^(.*)(_destroyed_only|_with_destroyed)$/ and self.respond_to?($1)
         self.extend(Module.new{
           if $2 == '_with_destroyed'
@@ -110,16 +110,16 @@ module IsParanoid
             define_method name do |*args|
               self.with_exclusive_scope do
                 with_scope({:find => { :conditions => ["#{self.table_name}.#{destroyed_field} IS NOT ?", field_not_destroyed] }}) do
-                  self.send($1, *args)
+                  self.send($1, *args, &block)
                 end
               end
             end
 
           end
         })
-      self.send(name, *args)
+      self.send(name, *args, &block)
       else
-        super(name, *args)
+        super(name, *args, &block)
       end
     end
 
@@ -140,8 +140,17 @@ module IsParanoid
   end
 
   module InstanceMethods
+    def self.included(base)
+      base.class_eval do
+        unless method_defined? :method_missing
+          def method_missing(meth, *args, &block); super; end
+        end
+        alias_method :old_method_missing, :method_missing
+        alias_method :method_missing, :is_paranoid_method_missing
+      end
+    end
 
-    def method_missing name, *args
+    def is_paranoid_method_missing name, *args, &block
       # if we're trying for a _____with_destroyed method
       # and we can respond to the _____ method
       # and we have an association by the name of _____
@@ -164,9 +173,9 @@ module IsParanoid
             end                                       # end
           }
         )
-        self.send(name, *args)
+        self.send(name, *args, &block)
       else
-        super(name, *args)
+        old_method_missing(name, *args, &block)
       end
     end
 

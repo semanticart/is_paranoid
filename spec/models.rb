@@ -42,6 +42,14 @@ class Memory < ActiveRecord::Base #:nodoc:
 end
 
 class Sticker < ActiveRecord::Base #:nodoc
+  MM_NAME = "You've got method_missing"
+
+  # this simply serves to ensure that we don't break method_missing
+  # if it is implemented on a class and called before is_paranoid
+  def method_missing name, *args, &block
+    self.name = MM_NAME
+  end
+
   is_paranoid
   belongs_to :android
 end

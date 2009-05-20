@@ -198,6 +198,15 @@ describe IsParanoid do
       sticker.android.should == nil
       sticker.android_with_destroyed.should == nil
     end
+
+    it "should not break method_missing's defined before the is_paranoid call" do
+      # we've defined a method_missing on Sticker
+      # that changes the sticker name.
+      sticker = Sticker.new(:name => "Ponies!")
+      lambda{
+        sticker.some_crazy_method_that_we_certainly_do_not_respond_to
+      }.should change(sticker, :name).to(Sticker::MM_NAME)
+    end
   end
 
   describe 'alternate fields and field values' do
