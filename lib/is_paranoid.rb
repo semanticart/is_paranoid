@@ -185,6 +185,7 @@ module IsParanoid
         "#{destroyed_field} = #{self.class.connection.quote(( field_destroyed.respond_to?(:call) ? field_destroyed.call : field_destroyed))}",
         "id = #{self.id}"
       )
+      self
     end
 
     # Override the default destroy to allow us to flag deleted_at.
@@ -196,13 +197,14 @@ module IsParanoid
       return false if callback(:before_destroy) == false
       result = destroy_without_callbacks
       callback(:after_destroy)
-      result
+      self
     end
 
     # Set deleted_at flag on a model to field_not_destroyed, effectively
     # undoing the soft-deletion.
     def restore(options = {})
       self.class.restore(id, options)
+      self
     end
 
   end
