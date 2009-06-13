@@ -123,6 +123,20 @@ module IsParanoid
       end
     end
 
+    # with_exclusive_scope is used internally by ActiveRecord when preloading
+    # associations.  Unfortunately this is problematic for is_paranoid since we
+    # want preloaded is_paranoid items to still be scoped to their deleted conditions.
+    # so we override that here.
+    def with_exclusive_scope(method_scoping = {}, &block)
+      # this is rather hacky, suggestions for improvements appreciated... the idea
+      # is that when the caller includes the method preload_associations, we want
+      # to apply our is_paranoid conditions
+      if caller.any?{|c| c =~ /\d+:in `preload_associations'$/}
+        method_scoping.deep_merge!(:find => {:conditions => {destroyed_field => field_not_destroyed} })
+      end
+      super method_scoping, &block
+    end
+
     protected
 
     def should_restore?(association_name, dependent_relationship, options) #:nodoc:

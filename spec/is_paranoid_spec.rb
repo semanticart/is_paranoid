@@ -1,13 +1,15 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 require File.expand_path(File.dirname(__FILE__) + '/models')
 
+LUKE = 'Luke Skywalker'
+
 describe IsParanoid do
   before(:each) do
     Android.delete_all
     Person.delete_all
     Component.delete_all
 
-    @luke = Person.create(:name => 'Luke Skywalker')
+    @luke = Person.create(:name => LUKE)
     @r2d2 = Android.create(:name => 'R2D2', :owner_id => @luke.id)
     @c3p0 = Android.create(:name => 'C3P0', :owner_id => @luke.id)
 
@@ -81,6 +83,15 @@ describe IsParanoid do
       @r2d2.destroy
       Android.all_destroyed_only.size.should == 1
       Android.first_destroyed_only.should == @r2d2
+    end
+
+    it "should not show destroyed models via :include" do
+      Person.first(:conditions => {:name => LUKE}, :include => :androids).androids.size.should == 2
+      @r2d2.destroy
+      person = Person.first(:conditions => {:name => LUKE}, :include => :androids)
+      # ensure that we're using the preload and not loading it via a find
+      Android.should_not_receive(:find)
+      person.androids.size.should == 1
     end
   end
 
