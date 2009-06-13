@@ -1,5 +1,9 @@
 This will only document major changes.  Please see the commit log for minor changes.
 
+-2009-06-13
+* added support for is_paranoid conditions being maintained on preloaded associations
+* destroy and restore now return self (to be more in keeping with other ActiveRecord methods) via Brent Dillingham
+
 -2009-05-19
 * added support for specifying relationships to restore via instance_model.restore(:include => [:parent_1, :child_1, :child_2]), etc.
 * method_missing is no longer overridden on instances provided you declare your custom method_missing *before* specifying the model is_paranoid
