@@ -17,7 +17,7 @@ If you're working with Rails, in your environment.rb, add the following to your 
 <pre>
 Rails::Initializer.run do |config|
   # ...
-  config.gem "jchupp-is_paranoid", :lib => 'is_paranoid', :version => ">= 0.0.1"
+  config.gem "semanticart-is_paranoid", :lib => 'is_paranoid', :version => ">= 0.0.1"
 end
 </pre>
 
