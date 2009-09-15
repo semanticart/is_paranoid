@@ -176,15 +176,30 @@ module IsParanoid
 
         self.class.send(
           :include,
-          Module.new{                                 # Example:
-            define_method name do |*args|             # def android_with_destroyed
-              parent_klass.first_with_destroyed(      #   Android.first_with_destroyed(
-                :conditions => {                      #     :conditions => {
-                  parent_klass.primary_key =>         #       :id =>
-                    self.send(assoc.primary_key_name) #         self.send(:android_id)
-                }                                     #     }
-              )                                       #   )
-            end                                       # end
+          Module.new {
+						if assoc.macro.to_s =~ /^has/
+							parent_method = assoc.macro.to_s =~ /^has_one/ ? 'first_with_destroyed' : 'all_with_destroyed'
+							                                            # Example:
+	            define_method name do |*args|               # def android_with_destroyed
+	              parent_klass.send("#{parent_method}",     #   Android.all_with_destroyed(
+	                :conditions => {                        #     :conditions => {
+	                  assoc.primary_key_name =>             #       :person_id =>
+	                    self.send(parent_klass.primary_key) #         self.send(:id)
+	                }                                       #     }
+	              )                                         #   )
+	            end                                         # end
+	
+						else
+                                                          # Example:
+	            define_method name do |*args|               # def android_with_destroyed
+	              parent_klass.first_with_destroyed(        #   Android.first_with_destroyed(
+	                :conditions => {                        #     :conditions => {
+	                  parent_klass.primary_key =>           #       :id =>
+	                    self.send(assoc.primary_key_name)   #         self.send(:android_id)
+	                }                                       #     }
+	              )                                         #   )
+	            end                                         # end
+						end
           }
         )
         self.send(name, *args, &block)

@@ -203,6 +203,13 @@ describe IsParanoid do
       end
     end
 
+		it "should be able to access destroyed children" do
+			comps = @r2d2.components
+			comps.to_s # I have no idea why this makes it pass, but hey, here it is
+			@r2d2.components.first.destroy
+			@r2d2.components_with_destroyed.should == comps
+		end
+
     it "should return nil if no destroyed parent exists" do
       sticker = Sticker.new(:name => 'Rainbows')
       # because the default relationship works this way, i.e.
