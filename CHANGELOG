@@ -1,5 +1,8 @@
 This will only document major changes.  Please see the commit log for minor changes.
 
+-2009-09-15
+* added support for has_many associations (i.e. @r2d2.components_with_destroyed) via Amiel Martin
+
 -2009-06-13
 * added support for is_paranoid conditions being maintained on preloaded associations
 * destroy and restore now return self (to be more in keeping with other ActiveRecord methods) via Brent Dillingham
