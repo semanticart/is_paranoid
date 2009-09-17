@@ -54,5 +54,5 @@ ActiveRecord::Schema.define(:version => 20090317164830) do
     t.string   "name"
     t.datetime "deleted_at"
   end
-  
+
 end

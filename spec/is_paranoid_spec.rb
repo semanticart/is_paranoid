@@ -281,12 +281,12 @@ describe IsParanoid do
     end
 
   end
-  
+
   describe "alternate primary key" do
     it "should destroy without problem" do
       uuid = Uuid.create(:name => "foo")
       uuid.destroy.should be_true
     end
   end
-  
+
 end

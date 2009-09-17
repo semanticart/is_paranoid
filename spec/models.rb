@@ -95,10 +95,10 @@ end
 
 class Uuid < ActiveRecord::Base #:nodoc:
   set_primary_key "uuid"
-  
+
   def before_create
     self.uuid = "295b3430-85b8-012c-cfe4-002332cf7d5e"
   end
-  
+
   is_paranoid
 end
