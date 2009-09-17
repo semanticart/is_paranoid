@@ -1,5 +1,8 @@
 This will only document major changes.  Please see the commit log for minor changes.
 
+-2009-09-17
+* fixed when primary key was not "id" (ie: "uuid") via Thibaud Guillaume-Gentil
+
 -2009-09-15
 * added support for has_many associations (i.e. @r2d2.components_with_destroyed) via Amiel Martin
 

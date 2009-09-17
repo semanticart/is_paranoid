@@ -60,8 +60,8 @@ module IsParanoid
       options.reverse_merge!({:include_destroyed_dependents => true}) unless options[:include]
       with_exclusive_scope do
         update_all(
-        "#{destroyed_field} = #{connection.quote(field_not_destroyed)}",
-        "id = #{id}"
+          "#{destroyed_field} = #{connection.quote(field_not_destroyed)}",
+          primary_key.to_sym => id
         )
       end
 
@@ -212,7 +212,7 @@ module IsParanoid
     def destroy_without_callbacks
       self.class.update_all(
         "#{destroyed_field} = #{self.class.connection.quote(( field_destroyed.respond_to?(:call) ? field_destroyed.call : field_destroyed))}",
-        "id = #{self.id}"
+        self.class.primary_key.to_sym => self.id
       )
       self
     end

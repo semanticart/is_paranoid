@@ -48,4 +48,11 @@ ActiveRecord::Schema.define(:version => 20090317164830) do
     t.string   "name"
     t.boolean  "alive", :default => true
   end
+
+  create_table "uuids", :id => false, :force => true  do |t|
+    t.string   "uuid",     :limit => 36,  :primary => true
+    t.string   "name"
+    t.datetime "deleted_at"
+  end
+  
 end
