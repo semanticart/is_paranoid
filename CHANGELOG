@@ -1,5 +1,8 @@
 This will only document major changes.  Please see the commit log for minor changes.
 
+-2009-09-18
+* making is_paranoid play nice with habtm relationships
+
 -2009-09-17
 * fixed when primary key was not "id" (ie: "uuid") via Thibaud Guillaume-Gentil
 

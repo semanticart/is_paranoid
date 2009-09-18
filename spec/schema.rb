@@ -7,6 +7,16 @@ ActiveRecord::Schema.define(:version => 20090317164830) do
     t.datetime "updated_at"
   end
 
+  create_table "androids_places", :force => true, :id => false do |t|
+    t.integer  "android_id"
+    t.integer  "place_id"
+  end
+
+  create_table "places", :force => true do |t|
+    t.string   "name"
+    t.datetime "deleted_at"
+  end
+
   create_table "people", :force => true do |t|
     t.string   "name"
     t.datetime "created_at"

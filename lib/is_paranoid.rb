@@ -209,7 +209,7 @@ module IsParanoid
     end
 
     # Mark the model deleted_at as now.
-    def destroy_without_callbacks
+    def alt_destroy_without_callbacks
       self.class.update_all(
         "#{destroyed_field} = #{self.class.connection.quote(( field_destroyed.respond_to?(:call) ? field_destroyed.call : field_destroyed))}",
         self.class.primary_key.to_sym => self.id
@@ -224,7 +224,7 @@ module IsParanoid
     # separately.
     def destroy
       return false if callback(:before_destroy) == false
-      result = destroy_without_callbacks
+      result = alt_destroy_without_callbacks
       callback(:after_destroy)
       self
     end

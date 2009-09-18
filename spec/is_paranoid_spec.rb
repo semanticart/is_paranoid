@@ -17,6 +17,8 @@ describe IsParanoid do
 
     @r2d2.memories.create(:name => 'A pretty sunset')
     @c3p0.sticker = Sticker.create(:name => 'OMG, PONIES!')
+    @tatooine = Place.create(:name => "Tatooine")
+    @r2d2.places << @tatooine
   end
 
   describe 'non-is_paranoid models' do
@@ -68,6 +70,14 @@ describe IsParanoid do
           @luke.destroy
         }.should change(Android, :count).from(2).to(0)
         Android.count_with_destroyed.should == 2
+      end
+
+      it "should not choke has_and_belongs_to_many relationships" do
+        @r2d2.places.should include(@tatooine)
+        @tatooine.destroy
+        @r2d2.reload
+        @r2d2.places.should_not include(@tatooine)
+        Place.all_with_destroyed.should include(@tatooine)
       end
     end
   end

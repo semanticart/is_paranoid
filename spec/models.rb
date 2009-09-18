@@ -8,6 +8,7 @@ class Android < ActiveRecord::Base #:nodoc:
   has_many :components, :dependent => :destroy
   has_one :sticker
   has_many :memories, :foreign_key => 'parent_id'
+  has_and_belongs_to_many :places
 
   is_paranoid
 
@@ -41,7 +42,7 @@ class Memory < ActiveRecord::Base #:nodoc:
   belongs_to :android, :class_name => "Android", :foreign_key => "parent_id"
 end
 
-class Sticker < ActiveRecord::Base #:nodoc
+class Sticker < ActiveRecord::Base #:nodoc:
   MM_NAME = "You've got method_missing"
 
   # this simply serves to ensure that we don't break method_missing
@@ -58,6 +59,14 @@ class AndroidWithScopedUniqueness < ActiveRecord::Base #:nodoc:
   set_table_name :androids
   validates_uniqueness_of :name, :scope => :deleted_at
   is_paranoid
+end
+
+class Place < ActiveRecord::Base #:nodoc:
+  is_paranoid
+  has_and_belongs_to_many :androids
+end
+
+class AndroidsPlaces < ActiveRecord::Base #:nodoc:
 end
 
 class Ninja < ActiveRecord::Base #:nodoc:
