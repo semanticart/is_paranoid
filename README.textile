@@ -1,5 +1,11 @@
 h1. is_paranoid ( same as it ever was )
 
+h3. advice and disclaimer
+
+You should always declare is_paranoid before any associations in your model unless you have a good reason for doing otherwise.
+
+You should never expect _any_ library to work or behave exactly how you want it to:  test, test, test and file an issue if you have any problems.  Bonus points if you include sample failing code.  Extra bonus points if you send a pull request that implements a feature/fixes a bug.
+
 h3. and you may ask yourself, well, how did I get here?
 
 Sometimes you want to delete something in ActiveRecord, but you realize you might need it later (for an undo feature, or just as a safety net, etc.).  There are a plethora of plugins that accomplish this, the most famous of which is the venerable acts_as_paranoid which is great but not really actively developed any more.  What's more, acts_as_paranoid was written for an older version of ActiveRecord and, with default_scope in 2.3, it is now possible to do the same thing with significantly less complexity.  Thus, *is_paranoid*.
@@ -91,7 +97,7 @@ And now the validates_uniqueness_of will ignore items that are destroyed.
 
 h3. and you may ask yourself, where does that highway go to?
 
-If you find any bugs, have any ideas of features you think are missing, or find things you're like to see work differently, feel free to send me a message or a pull request.
+If you find any bugs, have any ideas of features you think are missing, or find things you're like to see work differently, feel free to file an issue or send a pull request.
 
 Currently on the todo list:
 * add options for merging additional default_scope options (i.e. order, etc.)
