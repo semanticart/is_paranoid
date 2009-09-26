@@ -1,5 +1,8 @@
 This will only document major changes.  Please see the commit log for minor changes.
 
+-2009-09-25
+* fixing bug with has_many :through not respecting is_paranoid conditions (thanks, Ben Johnson)
+
 -2009-09-18
 * making is_paranoid play nice with habtm relationships
 

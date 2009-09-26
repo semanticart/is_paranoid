@@ -72,6 +72,24 @@ describe IsParanoid do
         Android.count_with_destroyed.should == 2
       end
 
+      it "shouldn't have problems with has_many :through relationships" do
+        # TODO: this spec can be cleaner and more specific, replace it later
+        # Dings use a boolean non-standard is_paranoid field
+        # Scratch uses the defaults.  Testing both ensures compatibility
+        [[:dings, Ding], [:scratches, Scratch]].each do |method, klass|
+          @r2d2.dings.should == []
+
+          dent = Dent.create(:description => 'really terrible', :android_id => @r2d2.id)
+          item = klass.create(:description => 'quite nasty', :dent_id => dent.id)
+          @r2d2.reload
+          @r2d2.send(method).should == [item]
+
+          dent.destroy
+          @r2d2.reload
+          @r2d2.send(method).should == []
+        end
+      end
+
       it "should not choke has_and_belongs_to_many relationships" do
         @r2d2.places.should include(@tatooine)
         @tatooine.destroy
@@ -298,5 +316,4 @@ describe IsParanoid do
       uuid.destroy.should be_true
     end
   end
-
 end

@@ -4,13 +4,15 @@ class Person < ActiveRecord::Base #:nodoc:
 end
 
 class Android < ActiveRecord::Base #:nodoc:
+  is_paranoid
   validates_uniqueness_of :name
   has_many :components, :dependent => :destroy
   has_one :sticker
   has_many :memories, :foreign_key => 'parent_id'
+  has_many :dents
+  has_many :dings, :through => :dents
+  has_many :scratches, :through => :dents
   has_and_belongs_to_many :places
-
-  is_paranoid
 
   # this code is to ensure that our destroy and restore methods
   # work without triggering before/after_update callbacks
@@ -18,6 +20,23 @@ class Android < ActiveRecord::Base #:nodoc:
   def raise_hell
     raise "hell"
   end
+end
+
+class Dent < ActiveRecord::Base #:nodoc:
+  is_paranoid
+  belongs_to :android
+  has_many :dings
+  has_many :scratches
+end
+
+class Ding < ActiveRecord::Base #:nodoc:
+  is_paranoid :field => [:not_deleted, true, false]
+  belongs_to :dent
+end
+
+class Scratch < ActiveRecord::Base #:nodoc:
+  is_paranoid
+  belongs_to :dent
 end
 
 class Component < ActiveRecord::Base #:nodoc:

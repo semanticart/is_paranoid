@@ -15,6 +15,10 @@ module IsParanoid
     class_inheritable_accessor :destroyed_field, :field_destroyed, :field_not_destroyed
     self.destroyed_field, self.field_destroyed, self.field_not_destroyed = opts[:field]
 
+    if self.reflect_on_all_associations.size > 0 && ! opts[:suppress_load_order_warning]
+      warn "is_paranoid warning in class #{self}:  You should declare is_paranoid before your associations"
+    end
+
     # This is the real magic. All calls made to this model will append
     # the conditions deleted_at => nil (or whatever your destroyed_field
     # and field_not_destroyed are). All exceptions require using
@@ -27,6 +31,25 @@ module IsParanoid
   end
 
   module ClassMethods
+    def is_or_equals_not_destroyed
+      if [nil, 'NULL'].include?(field_not_destroyed)
+        'IS NULL'
+      else
+        "= #{field_not_destroyed}"
+      end
+    end
+
+    # ensure that we respect the is_paranoid conditions when being loaded as a has_many :through
+    # NOTE: this only works if is_paranoid is declared before has_many relationships.
+    def has_many(association_id, options = {}, &extension)
+       if options.key?(:through)
+        conditions = "#{options[:through].to_s.pluralize}.#{destroyed_field} #{is_or_equals_not_destroyed}"
+        options[:conditions] = "(" + [options[:conditions], conditions].compact.join(") AND (") + ")"
+      end
+      super
+    end
+
+
     # Actually delete the model, bypassing the safety net. Because
     # this method is called internally by Model.delete(id) and on the
     # delete method in each instance, we don't need to specify those

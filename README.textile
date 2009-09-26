@@ -2,7 +2,11 @@ h1. is_paranoid ( same as it ever was )
 
 h3. advice and disclaimer
 
-You should always declare is_paranoid before any associations in your model unless you have a good reason for doing otherwise.
+You should always declare is_paranoid before any associations in your model unless you have a good reason for doing otherwise.  Some relationships might not behave properly if you fail to do so.  If you know what you're doing (and have written tests) and want to supress the warning then you can pass :suppress_load_order_warning => true as an option.
+
+<pre>
+  is_paranoid :suppress_load_order_warning => true
+</pre>
 
 You should never expect _any_ library to work or behave exactly how you want it to:  test, test, test and file an issue if you have any problems.  Bonus points if you include sample failing code.  Extra bonus points if you send a pull request that implements a feature/fixes a bug.
 
