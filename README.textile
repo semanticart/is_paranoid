@@ -1,3 +1,7 @@
+h1. NOTICE:  this library is no longer supported or actively developed by the original author.  It never made it to a 1.0 stable version.  Use it at your own risk and write lots of tests.
+
+You can read more here:  http://blog.semanticart.com/killing_is_paranoid/
+
 h1. is_paranoid ( same as it ever was )
 
 h3. advice and disclaimer
